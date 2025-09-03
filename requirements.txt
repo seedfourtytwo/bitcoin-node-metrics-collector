@@ -1,0 +1,4 @@
+python-bitcoinrpc>=1.0
+prometheus-client>=0.16.0
+python-dotenv>=1.0.0
+aiohttp>=3.8.0 
