@@ -133,6 +133,25 @@ Note: UTXO metrics are collected every 5 minutes to minimize system impact. The 
 - `bitcoin_block_transactions_mean`: Average transactions per block
 - `bitcoin_block_interval_seconds`: Time between last two blocks
 
+### Block Timestamp Metrics (Historical Analysis)
+- `bitcoin_block_timestamp`: Unix timestamp of block (with block_height label)
+
+**Labels:**
+- `node`: The Bitcoin node (core/knots)
+- `block_height`: The block height (e.g., "850000", "849999", "849998")
+
+**Example metrics:**
+```
+bitcoin_block_timestamp{node="core", block_height="850000"} 1703123456
+bitcoin_block_timestamp{node="core", block_height="849999"} 1703123000
+bitcoin_block_timestamp{node="core", block_height="849998"} 1703122544
+```
+
+**Note**: These timestamps can be used to calculate block intervals on your website or in Grafana. For example:
+- Interval between blocks 850000 and 849999: `bitcoin_block_timestamp{node="core", block_height="850000"} - bitcoin_block_timestamp{node="core", block_height="849999"}`
+- Query for specific block: `bitcoin_block_timestamp{node="core", block_height="850000"}`
+- Get all recent blocks: `bitcoin_block_timestamp{node="core"}`
+
 ### Fee Metrics
 - `bitcoin_fee_high`: Estimated fee rate for high priority - next block (sat/vB)
 - `bitcoin_fee_medium`: Estimated fee rate for medium priority - 3 blocks (sat/vB)
