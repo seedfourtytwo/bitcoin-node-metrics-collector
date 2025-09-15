@@ -591,6 +591,24 @@ async def collect_regular_metrics(node_name):
                       Gauge('bitcoin_full_version_string', f'Running Bitcoin {version_string}', ['node']))
             getattr(sys.modules[__name__], 'BITCOIN_FULL_VERSION_STRING').labels(node=node_name).set(1)
             
+            # Add Knots-specific subversion information
+            if 'knots' in version_string.lower():
+                # Extract Knots-specific information
+                knots_info = version_string
+                if 'Knots' in knots_info:
+                    # Handle format like "Satoshi28.1.0Knots20250305"
+                    knots_version = knots_info.split('Knots')[1] if 'Knots' in knots_info else 'unknown'
+                else:
+                    knots_version = 'unknown'
+                
+                # Set Knots-specific metrics
+                if not hasattr(sys.modules[__name__], 'BITCOIN_KNOTS_VERSION'):
+                    setattr(sys.modules[__name__], 'BITCOIN_KNOTS_VERSION', 
+                          Gauge('bitcoin_knots_version', 'Bitcoin Knots specific version information', ['node', 'knots_version']))
+                getattr(sys.modules[__name__], 'BITCOIN_KNOTS_VERSION').labels(node=node_name, knots_version=knots_version).set(1)
+                
+                print(f"[Metrics] Bitcoin Knots version for {node_name}: {knots_version}", flush=True)
+            
             print(f"[Metrics] Bitcoin version for {node_name}: {version_string} (v{major_version}.{minor_version}.{patch_version}) = {version_num}", flush=True)
         except Exception as e:
             print(f"[Metrics] Error collecting version info for {node_name}: {str(e)}", flush=True)
