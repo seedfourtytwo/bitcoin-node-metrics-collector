@@ -389,9 +389,20 @@ async def collect_regular_metrics(node_name):
             
             # Simplified block time calculation with consistent UTC/UNIX timestamps
             try:
-                # Get latest block info
+                # Get latest block info - force fresh data by clearing cache first
+                if node_name in RPC_CONNECTIONS:
+                    RPC_CONNECTIONS[node_name] = None  # Clear cache to get fresh data
+                
                 latest_block_hash = safe_rpc_call(node_name, 'getbestblockhash')
                 latest_block = safe_rpc_call(node_name, 'getblock', latest_block_hash)
+                
+                # Verify we got the actual latest block
+                current_height = blockchain_info['blocks']
+                if latest_block['height'] != current_height:
+                    print(f"[Metrics] WARNING: Block height mismatch! Latest block: {latest_block['height']}, Current height: {current_height}", flush=True)
+                    # Try to get the block by height instead
+                    latest_block = safe_rpc_call(node_name, 'getblock', current_height)
+                    latest_block_hash = latest_block['hash']
                 
                 # Get last 10 blocks for timestamp history
                 block_data = []  # Store both height and timestamp
@@ -424,6 +435,13 @@ async def collect_regular_metrics(node_name):
                         
                         block_time_str = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(timestamp))
                         print(f"[Metrics] Block {height}: {timestamp} ({block_time_str} UTC)", flush=True)
+                    
+                    # Log the latest block info for debugging
+                    latest_height = block_data[0]['height']
+                    latest_timestamp = block_data[0]['timestamp']
+                    latest_time_str = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(latest_timestamp))
+                    current_time_str = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(current_time))
+                    print(f"[Metrics] Latest block for {node_name}: {latest_height} at {latest_time_str} UTC (current: {current_time_str} UTC, {time_since_last:.1f}s ago)", flush=True)
                     
                     # Calculate and log intervals for debugging (but don't store as metrics)
                     log_msg = f"[Metrics] Block times - Current UTC: {time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(current_time))}, "
