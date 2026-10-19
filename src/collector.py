@@ -129,7 +129,7 @@ def get_rpc_connection(node_name):
                         username, password = cookie_content.split(':', 1)
                         # Create connection with appropriate timeouts
                         rpc_url = f"http://{username}:{password}@{node_config['rpc_host']}:{node_config['rpc_port']}"
-                        print(f"[RPC] Creating new connection for {node_name}: {rpc_url}", flush=True)
+                        print(f"[RPC] Creating new connection for {node_name}: {node_config['rpc_host']}:{node_config['rpc_port']}", flush=True)
                         
                         # Set different timeouts for different operations
                         RPC_CONNECTIONS[node_name] = AuthServiceProxy(
@@ -744,8 +744,8 @@ def run_metrics_server():
     
     # Start single HTTP server
     def start_metrics_server():
-        server = HTTPServer(('0.0.0.0', 9332), MetricsHandler)
-        print(f"[HTTP] Metrics server started on port 9332")
+        server = HTTPServer(('0.0.0.0', METRICS_PORT), MetricsHandler)
+        print(f"[HTTP] Metrics server started on port {METRICS_PORT}")
         print(f"[HTTP] Available endpoints:")
         print(f"[HTTP]   - /metrics      -> All metrics (debugging)")
         print(f"[HTTP]   - /metrics/core -> Core node metrics only")
@@ -757,7 +757,7 @@ def run_metrics_server():
     metrics_thread.start()
     
     print(f"Starting Bitcoin dual-node metrics collector")
-    print(f"[HTTP] Single server: http://0.0.0.0:9332")
+    print(f"[HTTP] Single server: http://0.0.0.0:{METRICS_PORT}")
     
     # Display node configuration
     print(f"[Startup] Configured nodes:")
